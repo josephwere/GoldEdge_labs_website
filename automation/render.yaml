@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: goldedge-backend
+    env: node
+    buildCommand: "cd 2_Backend && npm install"
+    startCommand: "cd 2_Backend && npm start"
+    envVars:
+      - key: MONGO_URI
+        value: YOUR_MONGODB_URI
+      - key: ADMIN_TOKEN
+        value: YOUR_ADMIN_TOKEN
+      - key: NEUROEDGE_API_KEY
+        value: YOUR_NEUROEDGE_API_KEY
+      - key: PORT
+        value: "10000"
+    healthCheckPath: /api/health

@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6.0
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: 2_Backend/Dockerfile
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/goldedge
+      - REDIS_URL=redis://redis:6379
+      - NEUROEDGE_API_KEY=YOUR_NEUROEDGE_API_KEY
+      - ADMIN_EMAIL=josephogwe8@gmail.com
+      - ADMIN_PASSWORD=Josboy@254
+      - ADMIN_TOKEN=Josboy@254
+      - PORT=10000
+      - ALLOWED_ORIGIN=*
+    ports:
+      - "10000:10000"
+    depends_on:
+      - mongo
+      - redis
+
+  frontend:
+    build:
+      context: .
+      dockerfile: 1_Frontend/Dockerfile
+    environment:
+      - REACT_APP_API_URL=http://localhost:10000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
