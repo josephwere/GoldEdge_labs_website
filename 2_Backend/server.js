@@ -1,19 +1,25 @@
-const express = require('express');
-const app = express();
-const helmet = require('helmet');
-const cors = require('cors');
-const rateLimit = require('express-rate-limit');
-const apiRoutes = require('./routes/api');
-const mongoose = require('mongoose');
-const path = require('path');
-const Redis = require('ioredis');
-const { exec } = require('child_process');
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
+import path from "path";
+import Redis from "ioredis";
+import { exec } from "child_process";
+import dotenv from "dotenv";
+import pool from "./db.js"; // ✅ new PostgreSQL connection
+import apiRoutes from "./routes/api.js";
+import adminRoutes from "./routes/admin.js";
 
+dotenv.config();
+
+const app = express();
+
+// --- Security & Middleware ---
 app.use(helmet());
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || '*'
+  origin: process.env.ALLOWED_ORIGIN || "*",
 }));
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: "1mb" }));
 
 const limiter = rateLimit({
   windowMs: 60 * 1000,
@@ -21,43 +27,44 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/goldedge';
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(()=> console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// --- PostgreSQL Connection Test ---
+pool.connect()
+  .then(() => console.log("✅ PostgreSQL connected"))
+  .catch((err) => console.error("❌ PostgreSQL connection error:", err));
 
-// Redis connection (optional)
+// --- Redis Connection (optional) ---
 let redisClient = null;
 if (process.env.REDIS_URL) {
   redisClient = new Redis(process.env.REDIS_URL);
-  redisClient.on('connect', ()=> console.log('Redis connected'));
-  redisClient.on('error', (e)=> console.error('Redis error', e));
+  redisClient.on("connect", () => console.log("Redis connected"));
+  redisClient.on("error", (e) => console.error("Redis error:", e));
 } else {
-  console.warn('REDIS_URL not set — using in-memory fallback for convo storage.');
+  console.warn("REDIS_URL not set — using in-memory fallback.");
 }
-
 app.locals.redis = redisClient;
 
-// Mount API routes
-app.use('/api', apiRoutes);
-app.use('/api/admin', require('./routes/admin'));
+// --- Mount Routes ---
+app.use("/api", apiRoutes);
+app.use("/api/admin", adminRoutes);
 
-// Basic root route
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+// --- Root Route ---
+app.get("/", (req, res) => {
+  res.sendFile(path.join(path.resolve(), "views", "index.html"));
 });
 
-// Try to seed admin if env present
+// --- Seed Admin ---
 if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-  console.log('Seeding admin user if missing...');
+  console.log("🪄 Seeding admin user if missing...");
   try {
-    exec('node seedAdmin.js', { cwd: __dirname }, (err, stdout, stderr) => {
-      if (err) console.error('Seed admin error', err);
-      if (stdout) console.log('Seed:', stdout);
-      if (stderr) console.error('Seed err:', stderr);
+    exec("node seedAdmin.js", { cwd: path.resolve() }, (err, stdout, stderr) => {
+      if (err) console.error("Seed admin error", err);
+      if (stdout) console.log("Seed:", stdout);
+      if (stderr) console.error("Seed err:", stderr);
     });
-  } catch(e){ console.error('Seed spawn error', e); }
+  } catch (e) {
+    console.error("Seed spawn error", e);
+  }
 }
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
