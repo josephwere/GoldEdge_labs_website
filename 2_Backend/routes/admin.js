@@ -57,4 +57,5 @@ router.post('/rewards/revoke', ensureAuth, async (req, res) => {
   res.json({ revoked:true });
 });
 
-module.exports = router;
+
+export default router;
