@@ -1,1 +1,25 @@
-yy
+{
+  "version": 2,
+  "name": "goldedge-labs-frontend",
+  "builds": [
+    {
+      "src": "1_Frontend/package.json",
+      "use": "@vercel/react"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://goldedge-backend.onrender.com/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "1_Frontend/public/index.html"
+    }
+  ],
+  "env": {
+    "REACT_APP_API_URL": "https://goldedge-backend.onrender.com",
+    "REACT_APP_NEUROEDGE_ENDPOINT": "https://api.neuroedge.ai/v1",
+    "REACT_APP_NEUROEDGE_KEY": "@neuroedge_api_key"
+  }
+}
