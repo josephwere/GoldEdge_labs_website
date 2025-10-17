@@ -1,18 +1,18 @@
-// db.js
+// db.js - PostgreSQL connection (for ES modules)
 import pkg from "pg";
-import dotenv from "dotenv";
-dotenv.config();
-
 const { Pool } = pkg;
 
-// Create a connection pool
 const pool = new Pool({
-  connectionString: process.env.MONGO_URI || process.env.POSTGRES_URI
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false } // Required for Render PostgreSQL
 });
 
-// Test connection
-pool.connect()
-  .then(() => console.log("✅ PostgreSQL connected successfully"))
-  .catch(err => console.error("❌ PostgreSQL connection error:", err));
+pool.on("connect", () => {
+  console.log("✅ PostgreSQL connected successfully");
+});
+
+pool.on("error", (err) => {
+  console.error("❌ PostgreSQL connection error:", err);
+});
 
 export default pool;
