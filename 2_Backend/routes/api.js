@@ -41,9 +41,8 @@ router.post('/rewards/unlock', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
-});
 
-module.exports = router;
+export default router;
 
 // Admin routes
 const adminRouter = require('./admin');
