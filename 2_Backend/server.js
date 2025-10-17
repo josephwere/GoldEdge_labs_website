@@ -1,3 +1,4 @@
+// server.js - GoldEdge Labs Backend
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -6,7 +7,7 @@ import path from "path";
 import Redis from "ioredis";
 import { exec } from "child_process";
 import dotenv from "dotenv";
-import pool from "./db.js"; // ✅ new PostgreSQL connection
+import pool from "./db.js"; // ✅ PostgreSQL connection
 import apiRoutes from "./routes/api.js";
 import adminRoutes from "./routes/admin.js";
 
@@ -16,9 +17,11 @@ const app = express();
 
 // --- Security & Middleware ---
 app.use(helmet());
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || "*",
-}));
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGIN || "*",
+  })
+);
 app.use(express.json({ limit: "1mb" }));
 
 const limiter = rateLimit({
@@ -28,7 +31,8 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // --- PostgreSQL Connection Test ---
-pool.connect()
+pool
+  .connect()
   .then(() => console.log("✅ PostgreSQL connected"))
   .catch((err) => console.error("❌ PostgreSQL connection error:", err));
 
@@ -36,12 +40,23 @@ pool.connect()
 let redisClient = null;
 if (process.env.REDIS_URL) {
   redisClient = new Redis(process.env.REDIS_URL);
-  redisClient.on("connect", () => console.log("Redis connected"));
+  redisClient.on("connect", () => console.log("🔗 Redis connected"));
   redisClient.on("error", (e) => console.error("Redis error:", e));
 } else {
-  console.warn("REDIS_URL not set — using in-memory fallback.");
+  console.warn("⚠️ REDIS_URL not set — using in-memory fallback.");
 }
 app.locals.redis = redisClient;
+
+// --- Test Route ---
+app.get("/api/test", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW() AS server_time");
+    res.json({ status: "ok", db_time: result.rows[0].server_time });
+  } catch (err) {
+    console.error("DB Test Error:", err);
+    res.status(500).json({ error: "Database not reachable" });
+  }
+});
 
 // --- Mount Routes ---
 app.use("/api", apiRoutes);
