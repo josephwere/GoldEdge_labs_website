@@ -1,6 +1,6 @@
 # GoldEdge Labs - Render Deployment Blueprint
 # Maintainer: Joseph Were (Founder, GoldEdge Labs)
-# Version: Ascension v5.1 - Stable Deployment
+# Version: Ascension v5.2 - PostgreSQL Stable Deployment
 
 services:
   # --- Backend API ---
@@ -11,8 +11,8 @@ services:
     autoDeploy: true
     region: oregon
     branch: main
-    rootDir: 2_Backend             # ✅ tell Render where your backend code lives
-    buildCommand: npm ci --omit=dev
+    rootDir: 2_Backend             # ✅ Backend code folder
+    buildCommand: npm install --omit=dev   # ✅ fixed (was npm ci)
     startCommand: node server.js
     healthCheckPath: /api/test
     envVars:
@@ -20,15 +20,19 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: MONGO_URI
+
+      # ✅ use PostgreSQL connection instead of MongoDB
+      - key: DATABASE_URL
         fromDatabase:
-          name: goldedge-mongo
+          name: goldedge-postgres
           property: connectionString
+
       - key: REDIS_URL
         fromService:
           name: goldedge-redis
           type: redis
           property: connectionString
+
       - key: NEUROEDGE_API_KEY
         sync: false
       - key: ADMIN_EMAIL
@@ -48,8 +52,8 @@ services:
         description: Allow backend connections
 
 databases:
-  # --- MongoDB Database ---
-  - name: goldedge-mongo
+  # --- PostgreSQL Database ---
+  - name: goldedge-postgres
     databaseName: goldedge_labs
     plan: free
     region: oregon
