@@ -1,10 +1,13 @@
 {
   "version": 2,
   "name": "goldedge-labs-frontend",
-  "buildCommand": "npm run build",
-  "outputDirectory": "build",
-  "framework": "create-react-app",
-  "rootDirectory": "1_Frontend",
+  "builds": [
+    {
+      "src": "1_Frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "1_Frontend/build" }
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
