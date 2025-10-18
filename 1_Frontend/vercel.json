@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "goldedge-labs-frontend",
+  "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://goldedge-backend.onrender.com/api/:match*"
+    }
+  ]
+}

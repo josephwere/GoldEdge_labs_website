@@ -1,0 +1,1 @@
+export default function HeaderCard({children}){return <div className='card p-4 rounded-md'>{children}</div>}

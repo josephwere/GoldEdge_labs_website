@@ -1,0 +1,20 @@
+[
+  {
+    "rank": 1,
+    "name": "Ava Johnson",
+    "points": 1520,
+    "role": "Lead Dev"
+  },
+  {
+    "rank": 2,
+    "name": "Kai Nakamura",
+    "points": 1470,
+    "role": "ML Eng"
+  },
+  {
+    "rank": 3,
+    "name": "Rin Patel",
+    "points": 1310,
+    "role": "Data Eng"
+  }
+]
